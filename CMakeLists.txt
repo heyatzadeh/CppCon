@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_definitions(-DUseVirtual)
 
-file(GLOB Sources *.h *cpp)
+file(GLOB Sources *.h *cpp */*.h */*.cpp)
 
 add_executable(CppCon ${Sources})
 
