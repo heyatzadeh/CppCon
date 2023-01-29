@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -73,6 +74,11 @@ public:
     {
     }
 
+    template <typename ShapeT, typename DrawStrategy>
+    Shape(ShapeT shape, DrawStrategy drawer) : pimpl{std::make_unique<ExtendedModel<ShapeT, DrawStrategy>>(std::move(shape), std::move(drawer))}
+    {
+    }
+
     friend void serialize(Shape const& shape)
     {
         shape.pimpl->do_serialize();
@@ -98,6 +104,31 @@ public:
         pimpl.swap(other.pimpl);
         return *this;
     }
+
+    template <typename ShapeT, typename DrawStrategy>
+    struct ExtendedModel : public ShapeConcept
+    {
+        explicit ExtendedModel(ShapeT shape, DrawStrategy drawer) : shape_(std::move(shape)), drawer_(std::move(drawer)) {}
+
+        void do_serialize() const override
+        {
+            serialize(shape_);
+        }
+
+        void do_draw() const override
+        {
+            drawer_(shape_);
+        }
+
+        std::unique_ptr<ShapeConcept> clone() const override
+        {
+            return std::make_unique<ExtendedModel>(*this);
+        }
+
+    private:
+        ShapeT shape_;
+        DrawStrategy drawer_;
+    };
 };
 
 void serialize(Circle const&) {}
